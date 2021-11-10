@@ -3,22 +3,28 @@ clear; clc; close all;
 
 %% choose multiple datasets or just one  
 neuron = Sources2D(); 
-nams = {'./data_2p.tif'};          % you can put all file names into a cell array; when it's empty, manually select files 
+nams = {
+    'C:\Users\Peter\Desktop\DATA\2P\M35-CRUSI\2021.10.28\temp1\t-000_001.tif',
+    'C:\Users\Peter\Desktop\DATA\2P\M35-CRUSI\2021.10.28\temp1\t-000_002.tif',
+    'C:\Users\Peter\Desktop\DATA\2P\M35-CRUSI\2021.10.28\temp1\t-000_003.tif',
+    'C:\Users\Peter\Desktop\DATA\2P\M35-CRUSI\2021.10.28\temp1\t-000_004.tif',
+    'C:\Users\Peter\Desktop\DATA\2P\M35-CRUSI\2021.10.28\temp1\t-000_005.tif',
+    };  % you can put all file names into a cell array; when it's empty, manually select files 
 nams = neuron.select_multiple_files(nams);  %if nam is [], then select data interactively 
 
 %% parameters  
 % -------------------------    COMPUTATION    -------------------------  %
-pars_envs = struct('memory_size_to_use', 8, ...   % GB, memory space you allow to use in MATLAB 
-    'memory_size_per_patch', 0.3, ...   % GB, space for loading data within one patch 
-    'patch_dims', [30, 40],...  %GB, patch size 
+pars_envs = struct('memory_size_to_use', 40, ...   % GB, memory space you allow to use in MATLAB 
+    'memory_size_per_patch', 32, ...   % GB, space for loading data within one patch 
+    'patch_dims', [512, 512],...  %GB, patch size 
     'batch_frames', 1000);           % number of frames per batch 
    
 
 % -------------------------      SPATIAL      -------------------------  %
-gSig = 0.5;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
-gSiz = 10;          % pixel, neuron diameter 
+gSig = 1;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
+gSiz = 50;          % pixel, neuron diameter 
 ssub = 1;           % spatial downsampling factor
-with_dendrites = false;   % with dendrites or not 
+with_dendrites = true;   % with dendrites or not 
 if with_dendrites
     % determine the search locations by dilating the current neuron shapes
     updateA_search_method = 'dilate';  %#ok<UNRCH>
@@ -30,10 +36,10 @@ else
     updateA_dist = 5;
     updateA_bSiz = neuron.options.dist;
 end
-spatial_constraints = struct('connected', true, 'circular', false);  % you can include following constraints: 'circular'
+spatial_constraints = struct('connected', false, 'circular', false);  % you can include following constraints: 'circular'
 
 % -------------------------      TEMPORAL     -------------------------  %
-Fs = 5;             % frame rate
+Fs = 16;             % frame rate
 tsub = 1;           % temporal downsampling factor
 deconv_options = struct('type', 'ar1', ... % model of the calcium traces. {'ar1', 'ar2'}
     'method', 'foopsi', ... % method for running deconvolution {'foopsi', 'constrained', 'thresholded'}
@@ -59,9 +65,9 @@ dmin = 10;       % minimum distances between two neurons. it is used together wi
 dmin_only = 2;  % merge neurons if their distances are smaller than dmin_only. 
 
 % -------------------------  INITIALIZATION   -------------------------  %
-K = [];             % maximum number of neurons per patch. when K=[], take as many as possible 
+K = [150];             % maximum number of neurons per patch. when K=[], take as many as possible 
 min_corr = 0.7;     % minimum local correlation for a seeding pixel
-min_pnr =10;       % minimum peak-to-noise ratio for a seeding pixel
+min_pnr =5;       % minimum peak-to-noise ratio for a seeding pixel
 min_pixel = 2^2;      % minimum number of nonzero pixels for each neuron
 bd = 0;             % number of rows/columns to be ignored in the boundary (mainly for motion corrected data)
 frame_range = [];   % when [], uses all frames 
@@ -73,7 +79,7 @@ center_psf = false;  % set the value as true when the background fluctuation is 
                     % set the value as false when the background fluctuation is small (2p)
 
 % ----------------------   MANUAL INTERVENTION  --------------------  %
-with_manual_intervention = false; 
+with_manual_intervention = true; 
 
 % -------------------------  FINAL RESULTS   -------------------------  %
 save_demixed = true;    % save the demixed file or not 

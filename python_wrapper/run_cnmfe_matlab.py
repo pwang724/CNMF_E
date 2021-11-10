@@ -81,7 +81,8 @@ if __name__ == '__main__':
                         default='none',
                         help='Substring in all image stacks files to process.')
     parser.add_argument('--matlab',
-                        default='~/Matlab/bin/matlab -softwareopengl',
+                        default=r"C:\Program Files\MATLAB\R2018a\bin\matlab " 
+                                r'-softwareopengl',
                         help='Path to MATLAB executable')
     parser.add_argument('--cnmf',
                         default='run_cnmfe_matlab',
@@ -95,6 +96,7 @@ if __name__ == '__main__':
         args.path = os.path.abspath(args.path)
     else:
         raise IOError('Path to stack or output is invalid!')
+    matlab_path = r"C:\Program Files\MATLAB\R2018a\bin\matlab"
 
     # Run CNMF-E on each dataset
     input_folders, output_folders = get_paths(args.path, args.name)
@@ -104,8 +106,8 @@ if __name__ == '__main__':
         print('out: ', out)
 
         # Start MATLAB
-        call(args.matlab + ' -nodesktop -nosplash -r \"' + args.cnmf +
-             '(\'' + inp + '\'); exit;\"', shell=True)
+        call('"' + matlab_path + '"' + ' -nodesktop -nosplash -r ' +
+             args.cnmf + "('" + inp + "')", shell=True)
 
     # Reformat all output files
     print('Postprocess .mat files in MATLAB...')

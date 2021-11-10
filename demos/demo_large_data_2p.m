@@ -3,20 +3,20 @@ clear; clc; close all;
 
 %% choose data 
 neuron = Sources2D(); 
-nam = './data_2p.tif';          % this demo data is very small, here we just use it as an example
+nam = 'C:\Users\Peter\Desktop\DATA\2P\M35-CRUSI\2021.10.28\temp\masked.tif';          % this demo data is very small, here we just use it as an example
 nam = neuron.select_data(nam);  %if nam is [], then select data interactively 
 
 %% parameters  
 % -------------------------    COMPUTATION    -------------------------  %
-pars_envs = struct('memory_size_to_use', 8, ...   % GB, memory space you allow to use in MATLAB 
-    'memory_size_per_patch', 0.3, ...   % GB, space for loading data within one patch 
-    'patch_dims', [30, 40]);  %GB, patch size 
+pars_envs = struct('memory_size_to_use', 40, ...   % GB, memory space you allow to use in MATLAB 
+    'memory_size_per_patch', 30, ...   % GB, space for loading data within one patch 
+    'patch_dims', [512, 512]);  %GB, patch size 
    
 % -------------------------      SPATIAL      -------------------------  %
-gSig = 0.5;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
-gSiz = 10;          % pixel, neuron diameter 
+gSig = 1;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
+gSiz = 50;          % pixel, neuron diameter 
 ssub = 1;           % spatial downsampling factor
-with_dendrites = false;   % with dendrites or not 
+with_dendrites = true;   % with dendrites or not 
 if with_dendrites
     % determine the search locations by dilating the current neuron shapes
     updateA_search_method = 'dilate';  %#ok<UNRCH>
@@ -28,10 +28,10 @@ else
     updateA_dist = 5;
     updateA_bSiz = neuron.options.dist;
 end
-spatial_constraints = struct('connected', true, 'circular', false);  % you can include following constraints: 'circular'
+spatial_constraints = struct('connected', false, 'circular', false);  % you can include following constraints: 'circular'
 
 % -------------------------      TEMPORAL     -------------------------  %
-Fs = 5;             % frame rate
+Fs = 16;             % frame rate
 tsub = 1;           % temporal downsampling factor
 deconv_options = struct('type', 'ar1', ... % model of the calcium traces. {'ar1', 'ar2'}
     'method', 'foopsi', ... % method for running deconvolution {'foopsi', 'constrained', 'thresholded'}
@@ -56,21 +56,21 @@ dmin = 10;       % minimum distances between two neurons. it is used together wi
 dmin_only = 2;  % merge neurons if their distances are smaller than dmin_only. 
 
 % -------------------------  INITIALIZATION   -------------------------  %
-K = [];             % maximum number of neurons per patch. when K=[], take as many as possible 
-min_corr = 0.7;     % minimum local correlation for a seeding pixel
-min_pnr =10;       % minimum peak-to-noise ratio for a seeding pixel
-min_pixel = 2^2;      % minimum number of nonzero pixels for each neuron
+K = [150];             % maximum number of neurons per patch. when K=[], take as many as possible 
+min_corr = 0.6;     % minimum local correlation for a seeding pixel
+min_pnr = 5;       % minimum peak-to-noise ratio for a seeding pixel
+min_pixel = 24;      % minimum number of nonzero pixels for each neuron
 bd = 0;             % number of rows/columns to be ignored in the boundary (mainly for motion corrected data)
 frame_range = [];   % when [], uses all frames 
 save_initialization = false;    % save the initialization procedure as a video. 
 use_parallel = true;    % use parallel computation for parallel computing 
 show_init = true;   % show initialization results 
-choose_params = false; % manually choose parameters 
+choose_params = true; % manually choose parameters 
 center_psf = false;  % set the value as true when the background fluctuation is large (usually 1p data) 
                     % set the value as false when the background fluctuation is small (2p)
 
 % ----------------------   MANUAL INTERVENTION  --------------------  %
-with_manual_intervention = false; 
+with_manual_intervention = true; 
 
 % -------------------------  FINAL RESULTS   -------------------------  %
 save_demixed = true;    % save the demixed file or not 
@@ -175,11 +175,6 @@ neuron.show_demixed_video(save_demixed, kt, [], amp_ac, range_ac, range_Y);
 
 %% save neurons shapes 
 neuron.save_neurons(); 
-
-%% save neurons shapes 
-neuron.save_neurons(); 
-
-
 
 
 
